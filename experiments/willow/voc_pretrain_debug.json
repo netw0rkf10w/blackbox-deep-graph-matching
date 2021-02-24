@@ -1,8 +1,8 @@
 {
   "default_json": "experiments/voc_basic.json",
-  "model_dir": "results/cached_weights",
+  "model_dir": "results/cached_weights_debug",
   "save_checkpoint": true,
-  "log_dir": "logs/voc_pretrain",
+  "log_dir": "logs/voc_pretrain_debug",
   "exclude_willow_classes": true,
   "TRAIN": {
     "lr_schedule": "long_nodrop"

@@ -23,5 +23,7 @@
   "TRAIN": {
     "num_graphs_in_matching_instance": 2
   },
-  "model_dir": "results/voc_all_multimatching"
+  "model_dir": "results/voc_all_multimatching",
+  "save_checkpoint": true,
+  "log_dir": "logs/voc_all_multimatching"
 }

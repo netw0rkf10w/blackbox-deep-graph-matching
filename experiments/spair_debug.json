@@ -1,9 +1,9 @@
 {
   "default_json": "experiments/voc_basic.json",
   "DATASET_NAME": "SPair71k",
-  "model_dir": "results/spair",
+  "model_dir": "results/spair_debug",
   "save_checkpoint": true,
-  "log_dir": "logs/spair",
+  "log_dir": "logs/spair_debug",
   "TRAIN": {
     "EPOCH_ITERS": 400,
     "difficulty_params": {

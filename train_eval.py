@@ -3,6 +3,8 @@ import torch.optim as optim
 import time
 from pathlib import Path
 
+from torch.utils.tensorboard import SummaryWriter
+
 from data.data_loader_multigraph import GMDataset, get_dataloader
 
 from utils.evaluation_metric import matching_accuracy_from_lists, f1_score, get_pos_neg_from_lists
@@ -54,7 +56,7 @@ def train_eval_model(model, criterion, optimizer, dataloader, num_epochs, resume
 
     # Evaluation only
     if cfg.evaluate_only:
-        assert resume
+        # assert resume
         print(f"Evaluating without training...")
         accs, f1_scores = eval_model(model, dataloader["test"])
         acc_dict = {
@@ -80,6 +82,11 @@ def train_eval_model(model, criterion, optimizer, dataloader, num_epochs, resume
     scheduler = optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=lr_milestones, gamma=lr_decay
     )
+
+    
+    if cfg.log_dir:
+        os.makedirs(cfg.log_dir, exist_ok=True)
+        writer = SummaryWriter(cfg.log_dir)
 
     for epoch in range(start_epoch, num_epochs):
         print("Epoch {}/{}".format(epoch, num_epochs - 1))
@@ -179,11 +186,26 @@ def train_eval_model(model, criterion, optimizer, dataloader, num_epochs, resume
             for cls, single_f1_score in zip(dataloader["train"].dataset.classes, f1_scores)
         }
         acc_dict.update(f1_dict)
-        acc_dict["matching_accuracy"] = torch.mean(accs)
-        acc_dict["f1_score"] = torch.mean(f1_scores)
+        val_acc = torch.mean(accs)
+        val_f1 = torch.mean(f1_scores)
+        acc_dict["matching_accuracy"] = val_acc
+        acc_dict["f1_score"] = val_f1
+
+        # Tensorboard
+        if cfg.log_dir:
+            writer.add_scalar('Loss/train', epoch_loss, epoch)
+            writer.add_scalar('Acc/train', epoch_acc, epoch)
+            writer.add_scalar('F1/train', epoch_f1, epoch)
+            writer.add_scalar('Acc/val', val_acc, epoch)
+            writer.add_scalar('F1/val', val_f1, epoch)
+            lr = optimizer.param_groups[0]["lr"]
+            writer.add_scalar('lr', lr, epoch)
 
         scheduler.step()
 
+    # Close TensorBoard writer
+    if cfg.log_dir:
+        writer.close()
     time_elapsed = time.time() - since
     print(
         "Training complete in {:.0f}h {:.0f}m {:.0f}s".format(
@@ -207,18 +229,23 @@ if __name__ == "__main__":
 
     torch.manual_seed(cfg.RANDOM_SEED)
 
+    print("Creating dataloaders")
     dataset_len = {"train": cfg.TRAIN.EPOCH_ITERS * cfg.BATCH_SIZE, "test": cfg.EVAL.SAMPLES}
+    if hasattr(cfg.TRAIN, 'SAMPLES') and cfg.TRAIN.SAMPLES > 0 and cfg.TRAIN.SAMPLES < dataset_len['train']:
+        dataset_len['train'] = cfg.TRAIN.SAMPLES
     image_dataset = {
         x: GMDataset(cfg.DATASET_NAME, sets=x, length=dataset_len[x], obj_resize=(256, 256)) for x in ("train", "test")
     }
+
     dataloader = {x: get_dataloader(image_dataset[x], fix_seed=(x == "test")) for x in ("train", "test")}
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    
+    print("Creating model, loss function, optimizer")
     model = Net()
     model = model.cuda()
-
-
+    
+    
     criterion = HammingLoss()
 
     backbone_params = list(model.node_layers.parameters()) + list(model.edge_layers.parameters())

@@ -3,5 +3,7 @@
   "train_sampling": "all",
   "eval_sampling": "all",
   "visualize": true,
-  "model_dir": "results/voc_all_keypoints"
+  "model_dir": "results/voc_all_keypoints",
+  "save_checkpoint": true,
+  "log_dir": "logs/voc_all_keypoints"
 }

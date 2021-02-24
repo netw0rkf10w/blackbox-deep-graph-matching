@@ -112,3 +112,9 @@ output/
 \.idea/
 
 results/
+
+.DS_Store
+logs
+_NOTES*
+run.slurm
+submit_command.sh

@@ -3,7 +3,7 @@
   "DATASET_NAME": "PascalVOC",
   "exclude_willow_classes": false,
   "EVAL": {
-    "SAMPLES": 1000,
+    "SAMPLES": 100,
     "num_graphs_in_matching_instance": 2
   },
   "BB_GM": {
@@ -17,11 +17,10 @@
   },
   "train_sampling": "intersection",
   "eval_sampling": "intersection",
-  "save_checkpoint": true,
   "RANDOM_SEED": 123,
   "warmstart_path": null,
   "TRAIN": {
-    "EPOCH_ITERS": 2000,
+    "EPOCH_ITERS": 100,
     "LR": 0.002,
     "lr_schedule": "long_halving",
     "num_graphs_in_matching_instance": 2
@@ -32,6 +31,7 @@
     "reduced_vis": true
   },
   "evaluate_only": false,
-  "model_dir": "results/voc_basic",
-  "log_dir": "logs/voc_basic"
+  "model_dir": "results/voc_debug",
+  "save_checkpoint": true,
+  "log_dir": "logs/voc_debug"
 }
